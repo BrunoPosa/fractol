@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-#define MAXCOUNT 200
+#define MAXCOUNT 500
 typedef struct s_pixel_xy_values
 {
 	int	x;
@@ -16,6 +16,23 @@ typedef struct s_zoom_values
 	double	y;
 }	t_zoom;
 
+typedef struct s_redraw_loop_packet
+{
+	mlx_t		*mlx;
+	mlx_image_t	*img;
+	t_pixel_xy	*pixel;
+	double		*zoomf;
+}	t_redraw_pack;
+
+
+void	esc_keyhook(mlx_key_data_t keydata, void *param);
+void	scroll_hook(double xdelta, double ydelta, void *param);
+double	pixel_to_plane(char axis, int pixel_value);
+int		if_mandelbrot(double x, double y);
+void	my_pixel_putter(mlx_image_t *img, t_pixel_xy *pixel, double *zoomf);
+
+
+
 
 void	esc_keyhook(mlx_key_data_t keydata, void *param)
 {
@@ -24,32 +41,20 @@ void	esc_keyhook(mlx_key_data_t keydata, void *param)
 	(void)param;
 }
 
-// void	zoomer(char i_to_zoom_in_o_out, t_zoom *zoom)
-// {
-// 	if (i_to_zoom_in_o_out == 'i' || i_to_zoom_in_o_out == 'I')
-// 	{
-// 		pixel->x *= 1.003125;
-// 		pixel->y *= 1.003125;
-// 	}
-// 	else
-// 	{
-// 		pixel->x *= 0.3125;
-// 		pixel->y *= 0.3125;
-// 	}
-// }
-
-// void	scroll_hook(double xdelta, double ydelta, void *param)
-// {
-// 	if (ydelta > 0)
-// 	{
-// 		*(double *)param *= 0.8;
-// 	}
-// 	else if (ydelta < 0)
-// 	{
-// 		*(double *)param *= 1.2;
-// 	}
-// 	(void)xdelta;
-// }
+void	scroll_hook(double xdelta, double ydelta, void *param)
+{
+	if (ydelta > 0)
+	{
+		*((t_redraw_pack *)param)->zoomf *= 0.8;
+	}
+	else if (ydelta < 0)
+	{
+		*((t_redraw_pack *)param)->zoomf *= 1.2;
+	}
+	my_pixel_putter(((t_redraw_pack *)param)->img,
+		((t_redraw_pack *)param)->pixel, ((t_redraw_pack *)param)->zoomf);
+	(void)xdelta;
+}
 
 /*
 	pixel_to_plane converts pixel_value x or y into double values
@@ -105,19 +110,19 @@ int	if_mandelbrot(double x, double y)
 // 	return (0xFFFFFFFF);
 // }
  
-int	my_pixel_putter(mlx_image_t *img, t_pixel_xy *pixel, double *zoomf)
+void	my_pixel_putter(mlx_image_t *img, t_pixel_xy *pixel, double *zoomf)
 {
-	int color  = 0x000000FF; 
+	int color  = 0x000000FF;
 	int	temp = 0;
-	// pixel->x = pixel->x / 1920 * *zoomf;
-	// pixel->y = pixel->y / 1920 * *zoomf;
+	pixel->x = pixel->x / 1920 * *zoomf;
+	pixel->y = pixel->y / 1920 * *zoomf;
 
 	while (pixel->x < 1920)
 	{
 		pixel->y = 0;
 		while (pixel->y < 1280)
 		{
-			temp = if_mandelbrot(pixel_to_plane('x', pixel->x) * *(zoomf) - 1.2, pixel_to_plane('y', pixel->y) * *(zoomf));
+			temp = if_mandelbrot(pixel_to_plane('x', pixel->x) * *(zoomf), pixel_to_plane('y', pixel->y) * *(zoomf));
 			if (temp != 0)
 				color = temp * MAXCOUNT / 5 + 0xfff300;
 			else
@@ -127,28 +132,30 @@ int	my_pixel_putter(mlx_image_t *img, t_pixel_xy *pixel, double *zoomf)
 		}
 		pixel->x++;
 	}
-	return (0);
 }
 
 int	main(void)
 {
 	mlx_t	*mlx;
 	t_pixel_xy	pixel;
-	double	zoomf = 0.025;
+	double	zoomf = 0.5;
+	t_redraw_pack	redraw;
 
 	pixel.x = 0;
 	pixel.y = 0;
-	if (!(mlx = mlx_init(1920, 1280, "MLX42", false)))
+	if (!(mlx = mlx_init(1920, 1280, "fract", false)))
 		return (EXIT_FAILURE);
-	mlx_key_hook(mlx, &esc_keyhook, mlx);
-	// mlx_scroll_hook(mlx, &scroll_hook, &zoom_factor);
 	mlx_image_t* img = mlx_new_image(mlx, 1920, 1280);
-	if (!img)
+	redraw.mlx = mlx;
+	redraw.img = img;
+	redraw.pixel = &pixel;
+	redraw.zoomf = &zoomf;
+	mlx_key_hook(mlx, &esc_keyhook, mlx);
+	mlx_scroll_hook(mlx, &scroll_hook, &redraw);
+	if (!img || (mlx_image_to_window(mlx, img, 0, 0) < 0))
 		return -1;
 	// memset(img->pixels, 255, 1 * sizeof(int32_t));
-	mlx_image_to_window(mlx, img, 0, 0);
 	my_pixel_putter(img, &pixel, &zoomf);
-	mlx_image_to_window(mlx, img, 0, 0);
 	mlx_loop(mlx);
 	mlx_terminate(mlx);
 	return 0;
