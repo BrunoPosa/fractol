@@ -1,6 +1,6 @@
 #include "./MLX42/include/MLX42/MLX42.h"
-#define WINSIZE 1280
-#define MAXITER 100
+#define WINSIZE 800
+#define MAXITER 400
 #define SUCCESS 0
 #define ERROR -1
 
@@ -8,7 +8,10 @@ typedef struct	s_redraw
 {
 	mlx_t		*mlx;
 	mlx_image_t	*img;
-	double		zoomf;
+	double		zoom;
+	double		scale_coef;
+	double		dy[WINSIZE];
+	double		dx[WINSIZE];
 }	t_draw;
 
 void	renderer(t_draw *d);
@@ -24,28 +27,24 @@ void	scroll_hook(double xdelta, double ydelta, void *param)
 {
 	if (ydelta > 0)
 	{
-		((t_draw *)param)->zoomf *= 0.8;
+		((t_draw *)param)->zoom *= 0.9;
 	}
 	else if (ydelta < 0)
 	{
-		((t_draw *)param)->zoomf *= 1.2;
+		((t_draw *)param)->zoom *= 1.1;
 	}
 	renderer(param);
 	(void)xdelta;
 }
 
-//make this work with different WINSIZE
-double	scaled(int n)
+double	scaled(int n, t_draw *d)
 {
-	return (n * 0.003125 - 2);
+	return (n * d->scale_coef - 2);
 }
 
 int	my_color(int i)
 {
-	if (i != 0)
-		return (i * MAXITER / 10 + 0xfff300);
-	else
-		return (0x000000FF);
+	return (i << 24 | i << 16 | (i + i) << 8 | 255);//return (i * i + 1689389995);
 }
 
 int	mandelbrot(double x, double y)
@@ -58,7 +57,7 @@ int	mandelbrot(double x, double y)
 	i = 0;
 	real = 0.0;
 	imagi = 0.0;
-	while (real * real + imagi * imagi < 4 && i < MAXITER)
+	while (i < MAXITER && real < 2.0 && imagi < 2.0) // real * real + imagi * imagi < 4
 	{
 		temp = real * real - imagi * imagi + x;
 		imagi = 2 * real * imagi + y;
@@ -70,35 +69,48 @@ int	mandelbrot(double x, double y)
 	return (1);
 }
 
+// TODO store y values for WINSIZE in fixed-size array and just iterate over them passing array[i++] to mandelbrot f.
+// to lessen multiplications, kind of like why i have an xtemp variable.
+// zooms into the seahorse valley (offsets x:-0.743643887037151, and y:0.13182590420533)
 void	renderer(t_draw *d)
 {
-	int		x;
-	int		y;
-	int		i;
+	int			x;
+	int			y;
+	int			i;
+	double		xof;
+	double		yof;
 
 	x = 0;
 	y = 0;
 	i = 0;
+	xof = - 0.743643887037249;
+	yof = 0.13182590420533;
 	while (x < WINSIZE)
 	{
 		y = 0;
 		while (y < WINSIZE)
 		{
-			i = mandelbrot(scaled(x) * d->zoomf - 0.75, scaled(y) * d->zoomf);
-			mlx_put_pixel(d->img, x, y, my_color(i)); // d->img->pixels[y * WINSIZE + x] = i * (i / 2);
+			i = mandelbrot(d->dx[x] * d->zoom + xof, d->dy[y] * d->zoom + yof);
+			((uint32_t *)d->img->pixels)[y * WINSIZE + x] = my_color(i); // TODO could this use i++ to access array elems? instead of y * and + operations?
 			y++;
 		}
 		x++;
 	}
-	mlx_image_to_window(d->mlx, d->img, 0, 0); // ?
 }
 
 // free(), mlx_terminate() on errors
 int	main(void)
 {
 	t_draw	draw;
+	int		i;
 
-	draw.zoomf = 1.0;
+	i = -1;
+	draw.zoom = 1.0;
+	draw.scale_coef = 4.0 / WINSIZE;
+	while (++i < WINSIZE)
+		draw.dx[i] = scaled(i, &draw);
+	while (i-- > 0)
+		draw.dy[i] = scaled(i, &draw);
 	draw.mlx = mlx_init(WINSIZE, WINSIZE, "fractol", false);
 	if (!(draw.mlx))
 		return (ERROR);

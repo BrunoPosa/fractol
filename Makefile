@@ -6,7 +6,7 @@
 #    By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/05 18:31:30 by bposa             #+#    #+#              #
-#    Updated: 2024/05/18 23:52:55 by bposa            ###   ########.fr        #
+#    Updated: 2024/05/19 19:14:54 by bposa            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,7 @@ HEADERS	= -I $(LIBDIR)include
 all:	$(LIBDIR)build/libmlx42.a $(NAME)
 
 $(NAME): $(SRCS)
-	$(CC) $(CFLAGS) $(SRCS) $(LIBS) $(HEADERS) -o $(NAME)
+	$(CC) $(CFLAGS) -O3 $(SRCS) $(LIBS) $(HEADERS) -o $(NAME)
 
 $(LIBDIR)build/libmlx42.a:
 	cmake $(LIBDIR) -DDEBUG=1 -B $(LIBDIR)build && make -C $(LIBDIR)build -j4
