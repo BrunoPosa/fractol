@@ -3,15 +3,14 @@
 #define SUCCESS 0
 #define ERROR -1
 
-//convert to long double? slower..
 typedef struct	s_redraw
 {
 	mlx_t		*mlx;
 	mlx_image_t	*img;
 	int			limit;
 	double		scale_coef;
-	long double	dy[WINSIZE];
-	long double	dx[WINSIZE];
+	double		dy[WINSIZE];
+	double		dx[WINSIZE];
 }	t_draw;
 
 void	mandel_render(t_draw *d);
@@ -41,6 +40,7 @@ void	scroll_hook(double xdelta, double ydelta, void *param)
 		d->dx[i] *= zoomf;
 	while (i-- > 0)
 		d->dy[i] *= zoomf;
+	// julia_render(param);
 	mandel_render(param);
 	(void)xdelta;
 }
@@ -50,7 +50,7 @@ int	my_color(int i)
 	return (i << 24 | i << 16 | 220 << 8 | 255);
 }
 
-int	mandelbrot(double x, double y, t_draw *d)
+int	mandelbrot(long double x, long double y, t_draw *d)
 {
 	int			i;
 	long double	real;
@@ -106,7 +106,7 @@ int	main(void)
 
 	i = -1;
 	draw.scale_coef = 4.0 / WINSIZE;
-	draw.limit = 500.0;
+	draw.limit = 600.0;
 	while (++i < WINSIZE)
 		draw.dx[i] = i * draw.scale_coef - 2;
 	while (i-- > 0)
