@@ -3,6 +3,8 @@
 #define SUCCESS 0
 #define ERROR -1
 
+#include <stdio.h>
+
 typedef struct	s_redraw
 {
 	mlx_t		*mlx;
@@ -11,9 +13,17 @@ typedef struct	s_redraw
 	double		scale_coef;
 	double		dy[WINSIZE];
 	double		dx[WINSIZE];
+	double		julia_cr;
+	double		julia_ci;
 }	t_draw;
 
+int		mandelbrot(long double x, long double y, t_draw *d);
 void	mandel_render(t_draw *d);
+int		julia(long double x, long double y, t_draw *d);
+void	julia_render(t_draw *d);
+int		my_color(int i);
+void	esc_keyhook(mlx_key_data_t keydata, void *param);
+void	scroll_hook(double xdelta, double ydelta, void *param);
 
 void	esc_keyhook(mlx_key_data_t keydata, void *param)
 {
@@ -35,13 +45,13 @@ void	scroll_hook(double xdelta, double ydelta, void *param)
 		zoomf = 0.5;
 	else if (ydelta < 0)
 		zoomf = 1.5;
-	d->limit += 100 * (1.0 - zoomf);
+	d->limit += 105 * (1.0 - zoomf);
 	while (++i < WINSIZE)
 		d->dx[i] *= zoomf;
 	while (i-- > 0)
 		d->dy[i] *= zoomf;
-	// julia_render(param);
-	mandel_render(param);
+	julia_render(param);
+	// mandel_render(param);
 	(void)xdelta;
 }
 
@@ -62,7 +72,7 @@ int	mandelbrot(long double x, long double y, t_draw *d)
 	imagi = 0.0;
 	temp = 0.0;
 	x = x - 0.74453986035590838011;
-	y = y + 0.12172377389442482241;
+	y = y + 0.12172377388442482241;
 	while (i < d->limit && real < 2.0 && imagi < 2.0)
 	{
 		temp = real * real - imagi * imagi + x;
@@ -97,13 +107,63 @@ void	mandel_render(t_draw *d)
 	}
 }
 
+void	julia_render(t_draw *d)
+{
+	int	x;
+	int	y;
+	int	i;
+
+	x = 0;
+	y = 0;
+	i = 0;
+	while (x < WINSIZE)
+	{
+		y = 0;
+		while (y < WINSIZE)
+		{
+			i = julia(d->dx[x], d->dy[y], d);
+			((uint32_t *)d->img->pixels)[y * WINSIZE + x] = my_color(i);
+			y++;
+		}
+		x++;
+	}
+}
+
+int	julia(long double x, long double y, t_draw *d)
+{
+	int			i;
+	long double	real;
+	long double	imagi;
+	long double	temp;
+
+	i = 0;
+	real = x;
+	imagi = y;
+	temp = 0.0;
+	while (i < d->limit && real < 2.0 && imagi < 2.0)
+	{
+		temp = real * real - imagi * imagi +  0.37;
+		imagi = 2 * real * imagi + 0.1;
+		real = temp;
+		i++;
+	}
+	if (i < d->limit)
+		return (i);
+	return (1);
+}
+
 // free(), mlx_terminate() on errors
 // init f()
-int	main(void)
+#include <stdlib.h>
+int	main(int argc, char *argv[])
 {
 	t_draw	draw;
 	int		i;
 
+	(void)argc;
+	draw.julia_cr = (double)atoi(argv[1]);
+	draw.julia_ci = (double)atoi(argv[2]);
+	// printf("cr:%d\nci:%d\n", draw.julia_cr, draw.julia_ci);
 	i = -1;
 	draw.scale_coef = 4.0 / WINSIZE;
 	draw.limit = 600.0;
@@ -117,7 +177,8 @@ int	main(void)
 	draw.img = mlx_new_image(draw.mlx, WINSIZE, WINSIZE);
 	if (!draw.img || mlx_image_to_window(draw.mlx, draw.img, 0, 0) < 0)
 		return (ERROR);
-	mandel_render(&draw);
+	// mandel_render(&draw);
+	julia_render(&draw);
 	mlx_key_hook(draw.mlx, &esc_keyhook, draw.mlx);
 	mlx_scroll_hook(draw.mlx, &scroll_hook, &draw);
 	mlx_loop(draw.mlx);
