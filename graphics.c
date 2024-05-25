@@ -31,7 +31,7 @@ int		validator(int argc, char *argv[]);
 int		numscheck(char *d1, char *d2);
 int		are_digits_in_scope(char *s);
 double	my_atod(char *s);
-int		micro_atoi(const char *s);
+int		micro_atoi(char *s);
 //utils
 char	my_isdigit(char c);
 int		mystrlen(char *s);
@@ -187,7 +187,7 @@ char	my_isdigit(char c)
 int	are_digits_in_scope(char *s)
 {
 	int	i;
-	int temp;
+	int	temp;
 
 	i = 0;
 	temp = 0;
@@ -205,15 +205,17 @@ int	are_digits_in_scope(char *s)
 	return (SUCCESS);
 }
 
-int	micro_atoi(const char *s)
+int	micro_atoi(char *s)
 {
 	int	result;
 
 	result = 0;
+	if (mystrlen(s) > 4)
+		return (ERROR);
 	while (*s && (*s >= '0' && *s <= '9') && result < 1200)
 		result = result * 10 + *s++ - '0';
 	if ((*s && (*s < '0' || *s > '9')) || result > 1200 || result < 50)
-		return (-1);
+		return (ERROR);
 	return (result);
 }
 
@@ -247,7 +249,7 @@ double	my_atod(char *s)
 
 int	numscheck(char *d1, char *d2)
 {
-	int d1_len;
+	int	d1_len;
 	int	d2_len;
 
 	d1_len = mystrlen(d1);
@@ -320,21 +322,22 @@ void	initializor(char **argv, t_draw *d)
 int	input_error(int rvalue)
 {
 	if (write(1, "                                               \n", 48)
-	+ write(1, "***********************************************\n", 48)
-	+ write(1, "*  Error: Invalid input!                      *\n", 48)
-	+ write(1, "*                                             *\n", 48)
-	+ write(1, "*  Usage examples:                            *\n", 48)
-	+ write(1, "*   ./fractol julia -0.4 0.59 500             *\n", 48)
-	+ write(1, "*   ./fractol mandelbrot 600                  *\n", 48)
-	+ write(1, "*                                             *\n", 48)
-	+ write(1, "*  Note: For 'julia', provide 2 parameters    *\n", 48)
-	+ write(1, "*       in the range -2.0 to 2.0,             *\n", 48)
-	+ write(1, "*       with 1 to 10 decimals.                *\n", 48)
-	+ write(1, "*  Note: Provide fractal start depth for both *\n", 48)
-	+ write(1, "*       fractals at end, between 50 and 1200. *\n", 48)
-	+ write(1, "*                                             *\n", 48)
-	+ write(1, "*  Please try again.                          *\n", 48)
-	+ write(1, "***********************************************\n", 48) != 768)
+		+ write(1, "***********************************************\n", 48)
+		+ write(1, "*  Error: Invalid input!                      *\n", 48)
+		+ write(1, "*                                             *\n", 48)
+		+ write(1, "*  Usage examples:                            *\n", 48)
+		+ write(1, "*   ./fractol julia -0.4 0.59 500             *\n", 48)
+		+ write(1, "*   ./fractol mandelbrot 600                  *\n", 48)
+		+ write(1, "*                                             *\n", 48)
+		+ write(1, "*  Note: For 'julia', provide 2 parameters    *\n", 48)
+		+ write(1, "*       in the range -2.0 to 2.0,             *\n", 48)
+		+ write(1, "*       with 1 to 10 decimals.                *\n", 48)
+		+ write(1, "*  Note: Provide fractal start depth for both *\n", 48)
+		+ write(1, "*       fractals at end, between 50 and 1200. *\n", 48)
+		+ write(1, "*                                             *\n", 48)
+		+ write(1, "*  Please try again.                          *\n", 48)
+		+ write(1, "***********************************************\n", 48)
+		!= 768)
 	{
 		return (ERROR);
 	}
