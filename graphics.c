@@ -48,7 +48,10 @@ void	scroll_hook(double xdelta, double ydelta, void *param)
 		zoomf = 0.5;
 	else if (ydelta < 0)
 		zoomf = 1.5;
-	d->limit += 105 * (1.0 - zoomf);
+	if (d->fractal == 'j')
+		d->limit += 150 * (1.0 - zoomf);
+	else
+		d->limit += 105 * (1.0 - zoomf);
 	while (++i < WINSIZE)
 		d->dx[i] *= zoomf;
 	while (i-- > 0)
@@ -211,6 +214,18 @@ int	are_digits_in_scope(char *s)
 	return (SUCCESS);
 }
 
+int	micro_atoi(const char *s)
+{
+	int	result;
+
+	result = 0;
+	while (*s && (*s >= '0' && *s <= '9') && result < 1200)
+		result = result * 10 + *s++ - '0';
+	if ((*s && (*s < '0' || *s > '9')) || result > 1200 || result < 50)
+		return (-1);
+	return (result);
+}
+
 double	my_atod(char *s)
 {
 	double	n;
@@ -267,15 +282,20 @@ int	numscheck(char *d1, char *d2)
 
 int	validator(int argc, char *argv[])
 {
-	if ((argc != 2 && argc != 4)
-		|| (argc == 2 && cmp(argv[1], "mandelbrot") != SUCCESS)
-			|| (argc == 4 && cmp(argv[1], "julia") != SUCCESS))
+	if ((argc != 3 && argc != 5)
+		|| (argc == 3 && cmp(argv[1], "mandelbrot") != SUCCESS)
+			|| (argc == 5 && cmp(argv[1], "julia") != SUCCESS))
 	{
 		return (ERROR);
 	}
 	if (cmp(argv[1], "julia") == SUCCESS
-		&& ((argv[2][0] == '\0' || argv[3][0] == '\0')
-			|| numscheck(argv[2], argv[3]) == ERROR))
+		&& (argv[2][0] == '\0' || argv[3][0] == '\0' || argv[4][0] == '\0'
+			|| numscheck(argv[2], argv[3]) == ERROR
+				|| micro_atoi(argv[4]) == -1))
+	{
+		return (ERROR);
+	}
+	if (cmp(argv[1], "mandelbrot") == SUCCESS && micro_atoi(argv[2]) == -1)
 	{
 		return (ERROR);
 	}
@@ -288,15 +308,15 @@ int	initializor(char **argv, t_draw *d)
 
 	i = -1;
 	d->fractal = argv[1][0];
-
 	d->scale_coef = 4.0 / WINSIZE;
-	d->limit = 600.0;
+	d->limit = micro_atoi(argv[2]);
 	d->jreal = 0.0;
 	d->jimag = 0.0;
 	if (d->fractal == 'j')
 	{
 		d->jreal = my_atod(argv[2]);
 		d->jimag = my_atod(argv[3]);
+		d->limit = micro_atoi(argv[4]);
 	}
 	while (++i < WINSIZE)
 		d->dx[i] = i * d->scale_coef - 2;
@@ -313,19 +333,22 @@ int	initializor(char **argv, t_draw *d)
 
 int	input_error(int rvalue)
 {
-	if (write(1, "***********************************************\n", 48)
+	if (write(1, "                                               \n", 48)
+	+ write(1, "***********************************************\n", 48)
 	+ write(1, "*  Error: Invalid input!                      *\n", 48)
 	+ write(1, "*                                             *\n", 48)
 	+ write(1, "*  Usage examples:                            *\n", 48)
-	+ write(1, "*   ./fractol julia -0.4 0.59                 *\n", 48)
-	+ write(1, "*   ./fractol mandelbrot                      *\n", 48)
+	+ write(1, "*   ./fractol julia -0.4 0.59 500             *\n", 48)
+	+ write(1, "*   ./fractol mandelbrot 600                  *\n", 48)
 	+ write(1, "*                                             *\n", 48)
 	+ write(1, "*  Note: For 'julia', provide 2 parameters    *\n", 48)
 	+ write(1, "*       in the range -2.0 to 2.0,             *\n", 48)
 	+ write(1, "*       with 1 to 10 decimals.                *\n", 48)
+	+ write(1, "*  Note: Provide fractal start depth for both *\n", 48)
+	+ write(1, "*       fractals at end, between 50 and 1200. *\n", 48)
 	+ write(1, "*                                             *\n", 48)
 	+ write(1, "*  Please try again.                          *\n", 48)
-	+ write(1, "***********************************************\n", 48) != 624)
+	+ write(1, "***********************************************\n", 48) != 768)
 	{
 		return (ERROR);
 	}
