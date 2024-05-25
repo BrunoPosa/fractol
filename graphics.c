@@ -16,17 +16,33 @@ typedef struct	s_redraw
 	double		dy[WINSIZE];
 	double		dx[WINSIZE];
 	char		fractal;
+	int			(*fractalf)(long double, long double, struct s_redraw *);
 	double		jreal;
 	double		jimag;
 }	t_draw;
 
-int		mandelbrot(long double x, long double y, t_draw *d);
-void	mandel_render(t_draw *d);
-int		julia(long double x, long double y, t_draw *d);
-void	julia_render(t_draw *d);
-int		my_color(int i);
+//in file with main()
+void	initializor(char **argv, t_draw *d);
+int		input_error(int rvalue);
+int		error_exit(mlx_t *mlx);
 void	esc_keyhook(mlx_key_data_t keydata, void *param);
+//validation utils
+int		validator(int argc, char *argv[]);
+int		numscheck(char *d1, char *d2);
+int		are_digits_in_scope(char *s);
+double	my_atod(char *s);
+int		micro_atoi(const char *s);
+//utils
+char	my_isdigit(char c);
+int		mystrlen(char *s);
+int		cmp(char *s1, char *s2);
+//rendering
+void	renderer(t_draw *d);
+int		mandelbrot(long double x, long double y, t_draw *d);
+int		julia(long double x, long double y, t_draw *d);
 void	scroll_hook(double xdelta, double ydelta, void *param);
+int		my_color(int i);
+
 
 void	esc_keyhook(mlx_key_data_t keydata, void *param)
 {
@@ -56,10 +72,7 @@ void	scroll_hook(double xdelta, double ydelta, void *param)
 		d->dx[i] *= zoomf;
 	while (i-- > 0)
 		d->dy[i] *= zoomf;
-	if (d->fractal == 'm')
-		mandel_render(param);
-	else
-		julia_render(param);
+	renderer(param);
 	(void)xdelta;
 }
 
@@ -93,7 +106,7 @@ int	mandelbrot(long double x, long double y, t_draw *d)
 	return (1);
 }
 
-void	mandel_render(t_draw *d)
+void	renderer(t_draw *d)
 {
 	int	x;
 	int	y;
@@ -107,29 +120,7 @@ void	mandel_render(t_draw *d)
 		y = 0;
 		while (y < WINSIZE)
 		{
-			i = mandelbrot(d->dx[x], d->dy[y], d);
-			((uint32_t *)d->img->pixels)[y * WINSIZE + x] = my_color(i);
-			y++;
-		}
-		x++;
-	}
-}
-
-void	julia_render(t_draw *d) // no need for two render functions, just pass the correct function in the struct
-{
-	int	x;
-	int	y;
-	int	i;
-
-	x = 0;
-	y = 0;
-	i = 0;
-	while (x < WINSIZE)
-	{
-		y = 0;
-		while (y < WINSIZE)
-		{
-			i = julia(d->dx[x], d->dy[y], d);
+			i = d->fractalf(d->dx[x], d->dy[y], d);
 			((uint32_t *)d->img->pixels)[y * WINSIZE + x] = my_color(i);
 			y++;
 		}
@@ -302,7 +293,7 @@ int	validator(int argc, char *argv[])
 	return (SUCCESS);
 }
 
-int	initializor(char **argv, t_draw *d)
+void	initializor(char **argv, t_draw *d)
 {
 	int	i;
 
@@ -312,8 +303,10 @@ int	initializor(char **argv, t_draw *d)
 	d->limit = micro_atoi(argv[2]);
 	d->jreal = 0.0;
 	d->jimag = 0.0;
+	d->fractalf = &mandelbrot;
 	if (d->fractal == 'j')
 	{
+		d->fractalf = &julia;
 		d->jreal = my_atod(argv[2]);
 		d->jimag = my_atod(argv[3]);
 		d->limit = micro_atoi(argv[4]);
@@ -322,13 +315,6 @@ int	initializor(char **argv, t_draw *d)
 		d->dx[i] = i * d->scale_coef - 2;
 	while (i-- > 0)
 		d->dy[i] = i * d->scale_coef - 2;
-	d->mlx = mlx_init(WINSIZE, WINSIZE, "fractol", false);
-	if (!(d->mlx))
-		return (ERROR);
-	d->img = mlx_new_image(d->mlx, WINSIZE, WINSIZE);
-	if (!d->img || mlx_image_to_window(d->mlx, d->img, 0, 0) < 0)
-		return (ERROR);
-	return (SUCCESS);
 }
 
 int	input_error(int rvalue)
@@ -367,15 +353,17 @@ int	main(int argc, char *argv[])
 
 	if (validator(argc, argv) == ERROR)
 		return (input_error(ERROR));
-	if (initializor(argv, &draw) == ERROR)
+	initializor(argv, &draw);
+	draw.mlx = mlx_init(WINSIZE, WINSIZE, "fractol", false);
+	if (!(draw.mlx))
+		return (ERROR);
+	draw.img = mlx_new_image(draw.mlx, WINSIZE, WINSIZE);
+	if (!draw.img || mlx_image_to_window(draw.mlx, draw.img, 0, 0) < 0)
 		return (error_exit(draw.mlx));
-	if (draw.fractal == 'm')
-		mandel_render(&draw); //renderer(&draw); w/ function pointer in struct?
-	else if (draw.fractal == 'j')
-		julia_render(&draw);
+	renderer(&draw);
 	mlx_key_hook(draw.mlx, &esc_keyhook, draw.mlx);
 	mlx_scroll_hook(draw.mlx, &scroll_hook, &draw);
 	mlx_loop(draw.mlx);
 	mlx_terminate(draw.mlx);
-	return (SUCCESS); 
+	return (SUCCESS);
 }
