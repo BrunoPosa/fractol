@@ -6,7 +6,7 @@
 /*   By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 12:03:24 by bposa             #+#    #+#             */
-/*   Updated: 2024/05/25 12:16:33 by bposa            ###   ########.fr       */
+/*   Updated: 2024/05/26 22:02:41 by bposa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,12 @@ void	initializor(char **argv, t_draw *d)
 	i = -1;
 	d->fractal = argv[1][0];
 	d->scale_coef = 4.0 / WINSIZE;
-	d->limit = micro_atoi(argv[2]);
+	d->fractalf = &mandelbrot;
 	d->jreal = 0.0;
 	d->jimag = 0.0;
-	d->fractalf = &mandelbrot;
+	d->limit = 0;
+	if (d->fractal == 'm')
+		d->limit = micro_atoi(argv[2]);
 	if (d->fractal == 'j')
 	{
 		d->fractalf = &julia;
