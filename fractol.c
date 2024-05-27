@@ -6,7 +6,7 @@
 /*   By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 12:03:24 by bposa             #+#    #+#             */
-/*   Updated: 2024/05/26 22:02:41 by bposa            ###   ########.fr       */
+/*   Updated: 2024/05/28 00:29:39 by bposa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,25 +47,25 @@ void	initializor(char **argv, t_draw *d)
 
 int	input_error(int rvalue)
 {
-	if (write(1, "                                               \n", 48)
-		+ write(1, "***********************************************\n", 48)
-		+ write(1, "*  Error: Invalid input!                      *\n", 48)
-		+ write(1, "*                                             *\n", 48)
-		+ write(1, "*  Usage examples:                            *\n", 48)
-		+ write(1, "*   ./fractol julia -0.4 0.59 500             *\n", 48)
-		+ write(1, "*   ./fractol mandelbrot 600                  *\n", 48)
-		+ write(1, "*                                             *\n", 48)
-		+ write(1, "*  Note: For 'julia', provide 2 parameters    *\n", 48)
-		+ write(1, "*       in the range -2.0 to 2.0,             *\n", 48)
-		+ write(1, "*       with 1 to 10 decimals.                *\n", 48)
-		+ write(1, "*  Note: Provide fractal start depth for both *\n", 48)
-		+ write(1, "*       fractals at end, between 50 and 1200. *\n", 48)
-		+ write(1, "*                                             *\n", 48)
-		+ write(1, "*  Please try again.                          *\n", 48)
-		+ write(1, "***********************************************\n", 48)
-		!= 768)
+	if (write(1, "                                                 \n", 50)
+		+ write(1, "*************************************************\n", 50)
+		+ write(1, "*  Error: Invalid input!                        *\n", 50)
+		+ write(1, "*                                               *\n", 50)
+		+ write(1, "*  Usage examples:                              *\n", 50)
+		+ write(1, "*   ./fractol julia -0.4 0.59 500               *\n", 50)
+		+ write(1, "*   ./fractol mandelbrot 600                    *\n", 50)
+		+ write(1, "*                                               *\n", 50)
+		+ write(1, "*  Note: For 'julia', provide 2 parameters      *\n", 50)
+		+ write(1, "*       in the range -2.0 to 2.0,               *\n", 50)
+		+ write(1, "*       with 1 to 10 decimals.                  *\n", 50)
+		+ write(1, "*  Note: Provide fractal start depth for both   *\n", 50)
+		+ write(1, "*       fractals at end of line (range 50-1200) *\n", 50)
+		+ write(1, "*                                               *\n", 50)
+		+ write(1, "*  Please try again.                            *\n", 50)
+		+ write(1, "*************************************************\n", 50)
+		!= 800)
 	{
-		return (ERROR);
+		return (5);
 	}
 	return (rvalue);
 }

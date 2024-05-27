@@ -6,18 +6,27 @@
 /*   By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 12:01:23 by bposa             #+#    #+#             */
-/*   Updated: 2024/05/25 12:16:32 by bposa            ###   ########.fr       */
+/*   Updated: 2024/05/28 00:29:25 by bposa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FRACTOL_H
 # define FRACTOL_H
 
+# ifndef SUCCESS
+#  define SUCCESS 0
+# endif
+
+# ifndef WINSIZE
+#  define WINSIZE 600
+# endif
+
+# ifndef ERROR
+#  define ERROR -1
+# endif
+
 # include "./MLX42/include/MLX42/MLX42.h"
 # include <unistd.h>
-# define WINSIZE 600
-# define SUCCESS 0
-# define ERROR -1
 
 typedef struct s_redraw
 {

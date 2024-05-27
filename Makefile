@@ -6,7 +6,7 @@
 #    By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/05 18:31:30 by bposa             #+#    #+#              #
-#    Updated: 2024/05/27 17:56:44 by bposa            ###   ########.fr        #
+#    Updated: 2024/05/28 00:26:10 by bposa            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,19 +27,19 @@ LIBS	= $(LIBDIR)build/libmlx42.a -ldl -lglfw -pthread -lm -L "$$HOME/.brew/opt/g
 
 HEADERS	= -I $(LIBDIR)include
 
-all:	$(LIBDIR)build/libmlx42.a $(NAME)
+all:	$(NAME)
 
-$(NAME): $(SRCS) fractol.h
+$(NAME): $(SRCS) fractol.h $(LIBDIR)build/libmlx42.a
 	$(CC) $(CFLAGS) -O3 $(SRCS) $(LIBS) $(HEADERS) -o $(NAME)
 
 $(LIBDIR)build/libmlx42.a:
 	cmake $(LIBDIR) -B $(LIBDIR)build && make -C $(LIBDIR)build -j4
 	
 clean:
+	cd $(LIBDIR)build && make clean
 
 fclean: clean
 	rm -f $(NAME)
-	rm -f $(LIBDIR)/build/libmlx42.a
 
 re: fclean all
 

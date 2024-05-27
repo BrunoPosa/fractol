@@ -6,7 +6,7 @@
 /*   By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 12:11:39 by bposa             #+#    #+#             */
-/*   Updated: 2024/05/27 17:50:41 by bposa            ###   ########.fr       */
+/*   Updated: 2024/05/28 00:29:28 by bposa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ int	julia(long double x, long double y, t_draw *d)
 	}
 	if (i < d->limit)
 		return (i);
-	return (i * i);
+	return (1);
 }
 
 void	renderer(t_draw *d)
