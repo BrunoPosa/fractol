@@ -6,7 +6,7 @@
 /*   By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 12:11:39 by bposa             #+#    #+#             */
-/*   Updated: 2024/05/25 12:16:34 by bposa            ###   ########.fr       */
+/*   Updated: 2024/05/27 17:50:41 by bposa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,8 @@ void	scroll_hook(double xdelta, double ydelta, void *param)
 	if (ydelta > 0)
 		zoomf = 0.5;
 	else if (ydelta < 0)
-		zoomf = 1.5;
-	if (d->fractal == 'j')
-		d->limit += 150 * (1.0 - zoomf);
-	else
-		d->limit += 105 * (1.0 - zoomf);
+		zoomf = 2;
+	d->limit += 100 * (2.0 - zoomf) - 75;
 	while (++i < WINSIZE)
 		d->dx[i] *= zoomf;
 	while (i-- > 0)
@@ -75,8 +72,8 @@ int	julia(long double x, long double y, t_draw *d)
 	long double	temp;
 
 	i = 0;
-	real = x;
-	imagi = y;
+	real = x + 0.099500000999994;
+	imagi = y + 0.14000199999994;
 	temp = 0.0;
 	while (i < d->limit && real < 2.0 && imagi < 2.0)
 	{
@@ -87,7 +84,7 @@ int	julia(long double x, long double y, t_draw *d)
 	}
 	if (i < d->limit)
 		return (i);
-	return (1);
+	return (i * i);
 }
 
 void	renderer(t_draw *d)
