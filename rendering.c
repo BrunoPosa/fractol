@@ -6,7 +6,7 @@
 /*   By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 12:11:39 by bposa             #+#    #+#             */
-/*   Updated: 2024/05/28 00:29:28 by bposa            ###   ########.fr       */
+/*   Updated: 2024/05/29 19:00:58 by bposa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,10 @@ void	scroll_hook(double xdelta, double ydelta, void *param)
 	else if (ydelta < 0)
 		zoomf = 2;
 	d->limit += 100 * (2.0 - zoomf) - 75;
-	while (++i < WINSIZE)
+	while (++i <= WINSIZE)
 		d->dx[i] *= zoomf;
-	while (i-- > 0)
+	i = -1;
+	while (++i <= WINSIZE)
 		d->dy[i] *= zoomf;
 	renderer(param);
 	(void)xdelta;
@@ -101,7 +102,7 @@ void	renderer(t_draw *d)
 		y = 0;
 		while (y < WINSIZE)
 		{
-			i = d->fractalf(d->dx[x], d->dy[y], d);
+			i = d->fractalf(d->dx[x], d->dy[WINSIZE - y], d);
 			((uint32_t *)d->img->pixels)[y * WINSIZE + x] = my_color(i);
 			y++;
 		}

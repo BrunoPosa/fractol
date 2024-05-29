@@ -6,7 +6,7 @@
 /*   By: bposa <bposa@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 12:03:24 by bposa             #+#    #+#             */
-/*   Updated: 2024/05/28 00:29:39 by bposa            ###   ########.fr       */
+/*   Updated: 2024/05/29 18:29:10 by bposa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,9 +39,10 @@ void	initializor(char **argv, t_draw *d)
 		d->jimag = my_atod(argv[3]);
 		d->limit = micro_atoi(argv[4]);
 	}
-	while (++i < WINSIZE)
+	while (++i <= WINSIZE)
 		d->dx[i] = i * d->scale_coef - 2;
-	while (i-- > 0)
+	i = -1;
+	while (++i <= WINSIZE)
 		d->dy[i] = i * d->scale_coef - 2;
 }
 
